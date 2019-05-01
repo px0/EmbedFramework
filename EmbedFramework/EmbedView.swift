@@ -9,8 +9,15 @@
 import UIKit
 import WebKit
 
-internal class EmbedView: UIView, WKUIDelegate {
+internal class EmbedView: UIView, WKUIDelegate, WKScriptMessageHandler {
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        print("got message")
+        guard let response = message.body as? String else { return }
+        print(response)
+    }
+    
     var webView: WKWebView!
+    let userContentController = WKUserContentController()
     
     internal override init(frame: CGRect) {
         // For use in code
@@ -26,7 +33,13 @@ internal class EmbedView: UIView, WKUIDelegate {
     
     private func setUpView() {
         print("Bounds: \(self.frame)")
-        webView = WKWebView(frame: self.frame, configuration: WKWebViewConfiguration())
+        
+        
+        let config = WKWebViewConfiguration()
+        config.userContentController = userContentController
+        
+        webView = WKWebView(frame: self.frame, configuration: config)
+        userContentController.add(self, name: "embedReady")
         addSubview(webView)
         
         // This isn't working yet :(
