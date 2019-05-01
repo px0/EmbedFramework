@@ -10,6 +10,8 @@ import UIKit
 import WebKit
 
 open class EmbedViewController: UIViewController, WKScriptMessageHandler, WKNavigationDelegate {
+    
+    let userContentController = WKUserContentController()
 
     override open func viewDidLoad() {
         super.viewDidLoad()
@@ -22,13 +24,8 @@ open class EmbedViewController: UIViewController, WKScriptMessageHandler, WKNavi
         let screenWidth  = UIScreen.main.fixedCoordinateSpace.bounds.width
         let screenHeight = UIScreen.main.fixedCoordinateSpace.bounds.height*0.95
         
-        let contentController = WKUserContentController()
-        contentController.add(self, name: "embedReady")
-        
         let config = WKWebViewConfiguration()
-        config.userContentController = contentController
-        
-//        let config = WKWebViewConfiguration()
+        config.userContentController = userContentController
         
         let webView = WKWebView(frame: CGRect.init(x: 0.0, y: 0.0, width: screenWidth, height: screenHeight), configuration: config)
 
@@ -54,10 +51,11 @@ open class EmbedViewController: UIViewController, WKScriptMessageHandler, WKNavi
                     onload="onLoadHandler()"
                 ></script>
                 <script>
+                    window.webkit.messageHandlers.embedReady.postMessage();
                     function onLoadHandler() {
                         // Tell framework Embed is ready
                         try {
-                            webkit.messageHandlers.embedReady.postMessage();
+                            window.webkit.messageHandlers.embedReady.postMessage();
                         } catch(err) {
                             console.error('Can not reach native code');
                         }
@@ -75,16 +73,19 @@ open class EmbedViewController: UIViewController, WKScriptMessageHandler, WKNavi
         
         webView.loadHTMLString(html, baseURL: nil)
         
+        userContentController.add(self, name: "embedReady")
+        
+        print("blah")
         self.view = webView
     }
     
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        print("message")
-        //This function handles the events coming from javascript. We'll configure the javascript side of this later.
-        //We can access properties through the message body, like this:
-        guard let response = message.body as? String else { return }
-        print(response)
+        print("SOMETHING PLEASE HAPPEN")
+        if message.name == "test", let messageBody = message.body as? String {
+            print(messageBody)
+        }
     }
+    
     
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         //This function is called when the webview finishes navigating to the webpage.
@@ -92,15 +93,4 @@ open class EmbedViewController: UIViewController, WKScriptMessageHandler, WKNavi
         print("load")
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
