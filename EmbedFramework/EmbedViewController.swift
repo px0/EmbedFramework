@@ -25,6 +25,10 @@ open class EmbedViewController: UIViewController, WKScriptMessageHandler, WKNavi
         let screenHeight = UIScreen.main.fixedCoordinateSpace.bounds.height*0.95
         
         let config = WKWebViewConfiguration()
+        let userContentController = WKUserContentController()
+        
+        userContentController.add(self, name: "embedReady")
+        
         config.userContentController = userContentController
         
         let webView = WKWebView(frame: CGRect.init(x: 0.0, y: 0.0, width: screenWidth, height: screenHeight), configuration: config)
@@ -51,11 +55,11 @@ open class EmbedViewController: UIViewController, WKScriptMessageHandler, WKNavi
                     onload="onLoadHandler()"
                 ></script>
                 <script>
-                    window.webkit.messageHandlers.embedReady.postMessage();
+                    window.webkit.messageHandlers.embedReady.postMessage("Hello, world!");
                     function onLoadHandler() {
                         // Tell framework Embed is ready
                         try {
-                            window.webkit.messageHandlers.embedReady.postMessage();
+                            window.webkit.messageHandlers.embedReady.postMessage("Hello, world!");
                         } catch(err) {
                             console.error('Can not reach native code');
                         }
@@ -72,8 +76,6 @@ open class EmbedViewController: UIViewController, WKScriptMessageHandler, WKNavi
         """
         
         webView.loadHTMLString(html, baseURL: nil)
-        
-        userContentController.add(self, name: "embedReady")
         
         print("blah")
         self.view = webView
